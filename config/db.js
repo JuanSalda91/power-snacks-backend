@@ -1,4 +1,3 @@
-// config/db.js
 const { Pool } = require('pg');
 require('dotenv').config(); // Ensure environment variables are loaded
 
