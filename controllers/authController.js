@@ -36,7 +36,7 @@ const signup = async (req, res) => {
 
     // 4. Generate JWT token
     const token = jwt.sign(
-      { userID: newUser.id, email: newUser.email, role: newUser.role },
+      { userID: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '1h' }
     );
@@ -110,8 +110,44 @@ const login = async (req, res) => {
   }
 };
 
-// Export the functions
+// --- Get current user Function ---
+const getCurrentUser = async (req, res) => {
+  const userIdFromToken = req.user.id; // Get ID from middleware's req.user object
+  console.log(`Backend Controller: Received user ID from token: ${userIdFromToken}, Type: ${typeof userIdFromToken}`); // <-- Log type
+
+  // --- Explicitly parse the ID to an integer ---
+  const userId = parseInt(userIdFromToken, 10);
+  console.log(`Backend Controller: Parsed user ID for query: ${userId}, Type: ${typeof userId}`); // <-- Log parsed type
+
+  // --- Check if parsing failed ---
+  if (isNaN(userId)) {
+      console.error('Backend Controller: Failed to parse user ID from token:', userIdFromToken);
+      return res.status(400).json({ message: 'Invalid user identifier in token.' });
+  }
+
+  try {
+    const queryText = 'SELECT id, email, name, role, created_at FROM users WHERE id = $1';
+    // Use the parsed integer userId in the query parameters
+    const result = await db.query(queryText, [userId]);
+    console.log(`Backend: DB query executed. Row count: ${result.rows.length}`);
+
+    if (result.rows.length === 0) {
+      console.log(`Backend: User ID ${userId} (type: ${typeof userId}) not found in DB.`); // <-- Updated log
+      return res.status(404).json({ message: 'User not found in DB despite valid token.' }); // Keep 404 for not found
+    }
+
+    const userProfileData = result.rows[0];
+    console.log('Backend: User data being sent to frontend:', JSON.stringify(userProfileData, null, 2));
+    res.status(200).json(userProfileData);
+
+  } catch (error) {
+    console.error('Backend: Error fetching current user data:', error);
+    res.status(500).json({ message: 'Error retrieving user profile.' });
+  }
+};
+
 module.exports = {
   signup,
   login,
+  getCurrentUser,
 };
