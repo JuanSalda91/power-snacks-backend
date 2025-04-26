@@ -9,36 +9,31 @@ const SALT_ROUNDS = 10; // Cost factor for bcrypt hashing
 const signup = async (req, res) => {
   const { email, password, name } = req.body;
 
-  // Basic validation
   if (!email || !password) {
-    return res.status(400).json({ email: 'Email and password are required.' });
+    return res.status(400).json({ message: 'Email and password are required.' }); // Changed email field to message
   }
 
   try {
-    // 1. Check if user already exists
     const userCheck = await db.query('SELECT * FROM users WHERE email = $1', [email]);
     if (userCheck.rows.length > 0) {
       return res.status(400).json({ message: 'Email already in use.' });
     }
 
-    // 2. Hash the password
     const password_hash = await bcrypt.hash(password, SALT_ROUNDS);
 
-    // 3. insert new user into database
     const insertQuery = `
     INSERT INTO users (email, password_hash, name)
     VALUES ($1, $2, $3)
     RETURNING id, email, name, role, created_at;
-    `; // RETURNING clause gets the inserted user data back
-
+    `;
     const newUserResult = await db.query(insertQuery, [email, password_hash, name]);
     const newUser = newUserResult.rows[0];
 
-    // 4. Generate JWT token
+    // --- CORRECTED JWT Generation ---
     const token = jwt.sign(
-      { userID: user.id, email: user.email, role: user.role },
+      { userID: newUser.id, email: newUser.email, role: newUser.role }, // Use newUser properties
       process.env.JWT_SECRET,
-      { expiresIn: '1h' }
+      { expiresIn: '1h' } // Or your preferred duration
     );
 
     // 5. Send success response with token and user info

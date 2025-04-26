@@ -13,6 +13,8 @@ const PORT = process.env.PORT || 5001; // Use port from .env or default to 5001
 app.use(cors());
 app.use(express.json()); // Allows parsing of JSON request bodies
 
+app.use(express.static('public')); // Serve files from the public directory
+
 // Basic route for testing
 app.get('/', (req, res) => {
   res.send('Power Snacks Backend is running!');
