@@ -16,6 +16,9 @@
   "author": "",
   "license": "ISC",
   "type": "commonjs",
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
   "bugs": {
     "url": "https://github.com/JuanSalda91/power-snacks-backend/issues"
   },

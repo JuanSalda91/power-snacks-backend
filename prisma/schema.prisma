@@ -1,0 +1,48 @@
+// prisma/schema.prisma
+
+// Define the database provider and connection URL
+// It reads the DATABASE_URL from the .env file
+datasource db {
+  provider = "postgresql" // Use "postgresql" for PostgreSQL
+  url      = env("DATABASE_URL")
+}
+
+// Define the Prisma Client generator
+generator client {
+  provider = "prisma-client-js"
+}
+
+// --- Define Data Models ---
+// These should match your database tables
+
+model User {
+  id            Int      @id @default(autoincrement()) // Matches serial primary key
+  email         String   @unique @db.VarChar(255)      // Matches unique varchar
+  password_hash String   @db.VarChar(255)
+  name          String?  @db.VarChar(255)              // Optional based on your table (nullable)
+  role          String   @default("user") @db.VarChar(50) // Matches default 'user'
+  created_at    DateTime @default(now()) @db.Timestamptz // Matches timestamp with time zone
+  updated_at    DateTime @default(now()) @updatedAt @db.Timestamptz // @updatedAt handles auto-updates
+
+  // Add relations later if needed (e.g., to Orders)
+
+  @@map("users") // Explicitly map to the "users" table name
+}
+
+model Product {
+  id          Int     @id @default(autoincrement())
+  name        String  @db.VarChar(255)
+  type        String  @db.VarChar(50)
+  flavor      String  @db.VarChar(100)
+  description String  @db.Text
+  price       Decimal @db.Decimal(10, 2) // Matches numeric(10,2)
+  image_url   String? @db.VarChar(255)   // Optional based on your table (nullable)
+  created_at  DateTime @default(now()) @db.Timestamptz
+  updated_at  DateTime @default(now()) @updatedAt @db.Timestamptz
+
+  // Add relations later if needed (e.g., to OrderItems)
+
+  @@map("products") // Explicitly map to the "products" table name
+}
+
+// Add other models like Order, OrderItem later if needed
