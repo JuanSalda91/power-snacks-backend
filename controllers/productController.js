@@ -2,6 +2,8 @@ const db = require('../config/db'); // Import the database connection
 
 // Function to get all products, with filtering/searching
 const getAllProducts = async (req, res) => {
+  console.log('--- GET /api/products request received ---');
+  console.log('Request Query Parameters:', req.query);
   try {
     // Extract potetial query parameters
     const { type, flavor, search } = req.query;
